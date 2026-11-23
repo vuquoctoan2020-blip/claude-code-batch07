@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Báo cáo kinh doanh</title>
+
+  <!-- Fonts: Be Vietnam Pro (headings, full Vietnamese support) + Inter (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:wght@600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            base: '#090A14',
+            surface: '#11131F',
+            elevated: '#181B2A',
+            line: '#262A3D',
+            primary: {
+              DEFAULT: '#DF6B33',
+              hover: '#E87D49',
+              active: '#C85A26',
+            },
+          },
+          fontFamily: {
+            heading: ['Be Vietnam Pro', 'Poppins', 'sans-serif'],
+            sans: ['Inter', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+  <style>
+    body { background-color: #090A14; }
+    .tabular { font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+
+<body class="min-h-screen bg-base font-sans text-slate-200 antialiased">
+  <!-- Background glow -->
+  <div aria-hidden="true" class="pointer-events-none fixed inset-0 overflow-hidden">
+    <div class="absolute -top-40 -left-40 h-[28rem] w-[28rem] rounded-full bg-primary/20 blur-[120px]"></div>
+    <div class="absolute -bottom-48 -right-32 h-[30rem] w-[30rem] rounded-full bg-primary/10 blur-[140px]"></div>
+  </div>
+
+  <main class="relative min-h-screen px-4 py-10 sm:px-6 lg:px-8">
+    <div class="mx-auto w-full max-w-7xl space-y-6">
+
+      <!-- Top bar -->
+      <div class="flex items-center justify-between gap-4">
+        <div class="flex items-center gap-2">
+          <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-white">
+            <i data-lucide="zap" class="h-5 w-5"></i>
+          </span>
+          <span class="font-heading text-lg font-bold tracking-tight text-white">Nebula</span>
+        </div>
+        <a href="login.html" class="inline-flex items-center gap-1.5 rounded-xl border border-line bg-elevated px-3 py-2 text-sm text-slate-300 transition hover:border-primary/60 hover:text-white">
+          <i data-lucide="log-out" class="h-4 w-4"></i>
+          Đăng xuất
+        </a>
+      </div>
+
+      <!-- Header + filter -->
+      <header class="rounded-2xl border border-line bg-surface/80 p-6 shadow-2xl shadow-black/40 backdrop-blur sm:p-8">
+        <div class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p class="text-xs font-medium uppercase tracking-wider text-primary">Thương mại điện tử</p>
+            <h1 class="mt-1 font-heading text-2xl font-bold text-white sm:text-3xl">Báo cáo kinh doanh</h1>
+            <p class="mt-2 text-sm text-slate-400">
+              Doanh thu bán hàng, kết quả kinh doanh và số liệu marketing.
+              <span class="text-slate-500">Dữ liệu mẫu (demo), cập nhật đến <span id="lastUpdated">30/11/2026</span>.</span>
+            </p>
+          </div>
+
+          <div id="rangeWrap" class="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <span class="text-sm text-slate-400">Kỳ báo cáo:</span>
+            <div id="rangeGroup" role="group" aria-label="Chọn kỳ báo cáo" class="grid grid-cols-3 gap-1 rounded-xl border border-line bg-elevated p-1">
+              <button type="button" data-range="3" class="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-400 transition hover:text-white">3 tháng</button>
+              <button type="button" data-range="6" class="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-400 transition hover:text-white">6 tháng</button>
+              <button type="button" data-range="12" class="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-400 transition hover:text-white">12 tháng</button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Tabs -->
+      <div role="tablist" aria-label="Các mục báo cáo" class="grid grid-cols-3 gap-1 rounded-2xl border border-line bg-surface/80 p-1.5 backdrop-blur sm:inline-grid">
+        <button type="button" role="tab" id="tab-overview" data-tab="overview" aria-controls="panel-overview" class="flex flex-col items-center justify-center gap-1 rounded-xl px-2 py-2 text-xs font-medium transition sm:flex-row sm:gap-2 sm:px-5 sm:text-sm">
+          <i data-lucide="layout-dashboard" class="h-4 w-4 shrink-0"></i>Tổng quan
+        </button>
+        <button type="button" role="tab" id="tab-staff" data-tab="staff" aria-controls="panel-staff" class="flex flex-col items-center justify-center gap-1 rounded-xl px-2 py-2 text-xs font-medium transition sm:flex-row sm:gap-2 sm:px-5 sm:text-sm">
+          <i data-lucide="trophy" class="h-4 w-4 shrink-0"></i><span class="sm:hidden">Nhân viên</span><span class="hidden sm:inline">Nhân viên xuất sắc</span>
+        </button>
+        <button type="button" role="tab" id="tab-region" data-tab="region" aria-controls="panel-region" class="flex flex-col items-center justify-center gap-1 rounded-xl px-2 py-2 text-xs font-medium transition sm:flex-row sm:gap-2 sm:px-5 sm:text-sm">
+          <i data-lucide="map-pin" class="h-4 w-4 shrink-0"></i><span class="sm:hidden">Khu vực</span><span class="hidden sm:inline">Theo khu vực</span>
+        </button>
+      </div>
+
+      <!-- ================= TAB: Overview ================= -->
+      <div id="panel-overview" role="tabpanel" aria-labelledby="tab-overview" class="space-y-6">
+
+      <!-- KPI tiles -->
+      <section aria-label="Chỉ số chính" id="kpiGrid" class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"></section>
+
+      <!-- ===== Sales ===== -->
+      <h2 class="flex items-center gap-2 pt-2 font-heading text-lg font-bold text-white">
+        <i data-lucide="shopping-cart" class="h-5 w-5 text-primary"></i> Doanh thu bán hàng
+      </h2>
+      <section class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <article class="rounded-2xl border border-line bg-surface/80 p-5 shadow-2xl shadow-black/40 backdrop-blur sm:p-6 lg:col-span-2">
+          <h3 class="font-heading text-base font-bold text-white">Doanh thu theo tháng</h3>
+          <p class="mt-1 text-xs text-slate-500">Đơn vị: triệu đồng · so với cùng kỳ năm trước</p>
+          <ul class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-300" aria-label="Chú thích">
+            <li class="flex items-center gap-2"><span class="h-0.5 w-4 rounded" style="background:#3987E5"></span>Năm nay</li>
+            <li class="flex items-center gap-2"><span class="w-4 border-t-2 border-dashed border-slate-500"></span>Cùng kỳ năm trước</li>
+          </ul>
+          <div class="relative mt-3 h-72"><canvas id="revenueChart" role="img" aria-label="Biểu đồ đường doanh thu theo tháng, so với cùng kỳ năm trước"></canvas></div>
+        </article>
+
+        <article class="rounded-2xl border border-line bg-surface/80 p-5 shadow-2xl shadow-black/40 backdrop-blur sm:p-6">
+          <h3 class="font-heading text-base font-bold text-white">Doanh thu theo kênh bán</h3>
+          <p class="mt-1 text-xs text-slate-500">Đơn vị: triệu đồng · tổng trong kỳ</p>
+          <div class="relative mt-4 h-72"><canvas id="channelChart" role="img" aria-label="Biểu đồ cột ngang doanh thu theo kênh bán"></canvas></div>
+        </article>
+      </section>
+
+      <article class="rounded-2xl border border-line bg-surface/80 p-5 shadow-2xl shadow-black/40 backdrop-blur sm:p-6">
+        <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h3 class="font-heading text-base font-bold text-white">Top sản phẩm bán chạy</h3>
+            <p class="mt-1 text-xs text-slate-500">Xếp theo doanh thu trong kỳ</p>
+          </div>
+        </div>
+        <div class="mt-4 overflow-x-auto">
+          <table class="w-full min-w-[640px] text-left text-sm">
+            <thead class="border-b border-line text-xs uppercase tracking-wider text-slate-500">
+              <tr>
+                <th scope="col" class="py-3 pr-4 font-medium">#</th>
+                <th scope="col" class="py-3 pr-4 font-medium">Sản phẩm</th>
+                <th scope="col" class="py-3 pr-4 font-medium">Danh mục</th>
+                <th scope="col" class="py-3 pr-4 text-right font-medium">Đơn giá (đ)</th>
+                <th scope="col" class="py-3 pr-4 text-right font-medium">Số lượng</th>
+                <th scope="col" class="py-3 pr-4 text-right font-medium">Doanh thu (tr đ)</th>
+                <th scope="col" class="py-3 font-medium">Tỷ trọng</th>
+              </tr>
+            </thead>
+            <tbody id="productTable" class="tabular divide-y divide-line/60"></tbody>
+          </table>
+        </div>
+      </article>
+
+      <!-- ===== Business results ===== -->
+      <h2 class="flex items-center gap-2 pt-2 font-heading text-lg font-bold text-white">
+        <i data-lucide="bar-chart-3" class="h-5 w-5 text-primary"></i> Kết quả kinh doanh
+      </h2>
+      <article class="rounded-2xl border border-line bg-surface/80 p-5 shadow-2xl shadow-black/40 backdrop-blur sm:p-6">
+        <h3 class="font-heading text-base font-bold text-white">Cơ cấu doanh thu: chi phí và lợi nhuận</h3>
+        <p class="mt-1 text-xs text-slate-500">Đơn vị: triệu đồng · tổng chiều cao cột = doanh thu tháng</p>
+        <ul id="plLegend" class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-300" aria-label="Chú thích"></ul>
+        <div class="relative mt-3 h-80"><canvas id="plChart" role="img" aria-label="Biểu đồ cột chồng giá vốn, chi phí marketing, chi phí vận hành và lợi nhuận theo tháng"></canvas></div>
+      </article>
+
+      <article class="rounded-2xl border border-line bg-surface/80 p-5 shadow-2xl shadow-black/40 backdrop-blur sm:p-6">
+        <h3 class="font-heading text-base font-bold text-white">Báo cáo kết quả kinh doanh theo tháng</h3>
+        <p class="mt-1 text-xs text-slate-500">Đơn vị: triệu đồng · tháng mới nhất ở trên</p>
+        <div class="mt-4 overflow-x-auto">
+          <table class="w-full min-w-[760px] text-left text-sm">
+            <thead class="border-b border-line text-xs uppercase tracking-wider text-slate-500">
+              <tr>
+                <th scope="col" class="py-3 pr-4 font-medium">Tháng</th>
+                <th scope="col" class="py-3 pr-4 text-right font-medium">Doanh thu</th>
+                <th scope="col" class="py-3 pr-4 text-right font-medium">Giá vốn</th>
+                <th scope="col" class="py-3 pr-4 text-right font-medium">CP marketing</th>
+                <th scope="col" class="py-3 pr-4 text-right font-medium">CP vận hành</th>
+                <th scope="col" class="py-3 pr-4 text-right font-medium">Lợi nhuận</th>
+                <th scope="col" class="py-3 pr-4 text-right font-medium">Biên LN</th>
+                <th scope="col" class="py-3 text-right font-medium">So cùng kỳ</th>
+              </tr>
+            </thead>
+            <tbody id="plTable" class="tabular divide-y divide-line/60"></tbody>
+            <tfoot id="plTotal" class="tabular border-t border-line font-semibold text-white"></tfoot>
+          </table>
+        </div>
+      </article>
+
+      <!-- ===== Marketing ===== -->
+      <h2 class="flex items-center gap-2 pt-2 font-heading text-lg font-bold text-white">
+        <i data-lucide="megaphone" class="h-5 w-5 text-primary"></i> Số liệu marketing
+      </h2>
+      <section class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <article class="rounded-2xl border border-line bg-surface/80 p-5 shadow-2xl shadow-black/40 backdrop-blur sm:p-6">
+          <h3 class="font-heading text-base font-bold text-white">Phễu chuyển đổi</h3>
+          <p class="mt-1 text-xs text-slate-500">Số lượt trong kỳ · % so với lượt truy cập</p>
+          <div class="relative mt-4 h-72"><canvas id="funnelChart" role="img" aria-label="Biểu đồ phễu chuyển đổi từ lượt truy cập đến đặt hàng"></canvas></div>
+        </article>
+
+        <article class="rounded-2xl border border-line bg-surface/80 p-5 shadow-2xl shadow-black/40 backdrop-blur sm:p-6">
+          <h3 class="font-heading text-base font-bold text-white">ROAS theo kênh quảng cáo</h3>
+          <p class="mt-1 text-xs text-slate-500">Doanh thu / chi phí quảng cáo (lần)</p>
+          <div class="relative mt-4 h-72"><canvas id="roasChart" role="img" aria-label="Biểu đồ cột ROAS theo kênh quảng cáo"></canvas></div>
+        </article>
+      </section>
+
+      <article class="rounded-2xl border border-line bg-surface/80 p-5 shadow-2xl shadow-black/40 backdrop-blur sm:p-6">
+        <h3 class="font-heading text-base font-bold text-white">Hiệu quả kênh quảng cáo</h3>
+        <p class="mt-1 text-xs text-slate-500">Tổng trong kỳ · chi phí và doanh thu tính bằng triệu đồng</p>
+        <div class="mt-4 overflow-x-auto">
+          <table class="w-full min-w-[820px] text-left text-sm">
+            <thead class="border-b border-line text-xs uppercase tracking-wider text-slate-500">
+              <tr>
+                <th scope="col" class="py-3 pr-4 font-medium">Kênh</th>
+                <th scope="col" class="py-3 pr-4 text-right font-medium">Chi phí</th>
+                <th scope="col" class="py-3 pr-4 text-right font-medium">Hiển thị</th>
+                <th scope="col" class="py-3 pr-4 text-right font-medium">Lượt nhấp</th>
+                <th scope="col" class="py-3 pr-4 text-right font-medium">CTR</th>
+                <th scope="col" class="py-3 pr-4 text-right font-medium">Đơn hàng</th>
+                <th scope="col" class="py-3 pr-4 text-right font-medium">Doanh thu</th>
+                <th scope="col" class="py-3 pr-4 text-right font-medium">ROAS</th>
+                <th scope="col" class="py-3 text-right font-medium">CPA (đ)</th>
+              </tr>
+            </thead>
+            <tbody id="mktTable" class="tabular divide-y divide-line/60"></tbody>
+            <tfoot id="mktTotal" class="tabular border-t border-line font-semibold text-white"></tfoot>
+          </table>
+        </div>
+      </article>
+      </div>
+      <!-- /panel-overview -->
+
+      <!-- ================= TAB: Top sales staff ================= -->
+      <div id="panel-staff" role="tabpanel" aria-labelledby="tab-staff" class="hidden space-y-6">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 class="flex items-center gap-2 font-heading text-lg font-bold text-white">
+              <i data-lucide="trophy" class="h-5 w-5 text-primary"></i> Top 10 nhân viên bán hàng xuất sắc
+            </h2>
+            <p id="staffPeriodLabel" class="mt-1 text-sm text-slate-400"></p>
+          </div>
+          <div id="staffPeriodGroup" role="group" aria-label="Chọn kỳ xếp hạng" class="grid grid-cols-2 gap-1 rounded-xl border border-line bg-elevated p-1">
+            <button type="button" data-staff-period="month" class="rounded-lg px-4 py-1.5 text-sm font-medium text-slate-400 transition hover:text-white">Tháng này</button>
+            <button type="button" data-staff-period="quarter" class="rounded-lg px-4 py-1.5 text-sm font-medium text-slate-400 transition hover:text-white">Quý này</button>
+          </div>
+        </div>
+
+        <!-- Podium: top 3 -->
+        <section id="staffPodium" aria-label="Top 3 nhân viên" class="grid grid-cols-1 gap-4 sm:grid-cols-3"></section>
+
+        <section class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <article class="rounded-2xl border border-line bg-surface/80 p-5 shadow-2xl shadow-black/40 backdrop-blur sm:p-6 lg:col-span-2">
+            <h3 class="font-heading text-base font-bold text-white">Doanh thu top 10 nhân viên</h3>
+            <p class="mt-1 text-xs text-slate-500">Đơn vị: triệu đồng · rê chuột để xem % đạt chỉ tiêu</p>
+            <div class="relative mt-4 h-96"><canvas id="staffChart" role="img" aria-label="Biểu đồ cột ngang doanh thu của 10 nhân viên bán hàng xuất sắc nhất"></canvas></div>
+          </article>
+
+          <article class="rounded-2xl border border-line bg-surface/80 p-5 shadow-2xl shadow-black/40 backdrop-blur sm:p-6">
+            <h3 class="font-heading text-base font-bold text-white">Tổng kết đội ngũ</h3>
+            <p class="mt-1 text-xs text-slate-500">Tính trên top 10 trong kỳ</p>
+            <dl id="staffStats" class="mt-5 space-y-5"></dl>
+          </article>
+        </section>
+
+        <article class="rounded-2xl border border-line bg-surface/80 p-5 shadow-2xl shadow-black/40 backdrop-blur sm:p-6">
+          <h3 class="font-heading text-base font-bold text-white">Bảng xếp hạng</h3>
+          <p class="mt-1 text-xs text-slate-500">▲ / ▼ là thay đổi thứ hạng so với kỳ trước</p>
+          <div class="mt-4 overflow-x-auto">
+            <table class="w-full min-w-[760px] text-left text-sm">
+              <thead class="border-b border-line text-xs uppercase tracking-wider text-slate-500">
+                <tr>
+                  <th scope="col" class="py-3 pr-4 font-medium">Hạng</th>
+                  <th scope="col" class="py-3 pr-4 font-medium">Nhân viên</th>
+                  <th scope="col" class="py-3 pr-4 font-medium">Khu vực</th>
+                  <th scope="col" class="py-3 pr-4 text-right font-medium">Doanh thu (tr đ)</th>
+                  <th scope="col" class="py-3 pr-4 text-right font-medium">Đơn hàng</th>
+                  <th scope="col" class="py-3 pr-4 text-right font-medium">Giá trị TB (đ)</th>
+                  <th scope="col" class="py-3 font-medium">Đạt chỉ tiêu</th>
+                </tr>
+              </thead>
+              <tbody id="staffTable" class="tabular divide-y divide-line/60"></tbody>
+            </table>
+          </div>
+        </article>
+      </div>
+      <!-- /panel-staff -->
+
+      <!-- ================= TAB: Revenue by region ================= -->
+      <div id="panel-region" role="tabpanel" aria-labelledby="tab-region" class="hidden space-y-6">
+        <div>
+          <h2 class="flex items-center gap-2 font-heading text-lg font-bold text-white">
+            <i data-lucide="map-pin" class="h-5 w-5 text-primary"></i> Doanh thu theo khu vực địa lý
+          </h2>
+          <p id="regionPeriodLabel" class="mt-1 text-sm text-slate-400"></p>
+        </div>
+
+        <section class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <article class="rounded-2xl border border-line bg-surface/80 p-5 shadow-2xl shadow-black/40 backdrop-blur sm:p-6">
+            <div class="flex items-start justify-between gap-3">
+              <h3 class="font-heading text-base font-bold text-white">Doanh thu theo vùng</h3>
+              <span class="shrink-0 rounded-md border border-line bg-elevated px-2 py-0.5 text-xs text-slate-400">Cột nhóm</span>
+            </div>
+            <p class="mt-1 text-xs text-slate-500">Đơn vị: triệu đồng · kỳ này so với cùng kỳ năm trước</p>
+            <ul class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-300" aria-label="Chú thích">
+              <li class="flex items-center gap-2"><span class="h-2.5 w-2.5 rounded-sm" style="background:#3987E5"></span>Kỳ này</li>
+              <li class="flex items-center gap-2"><span class="h-2.5 w-2.5 rounded-sm bg-slate-500"></span>Cùng kỳ năm trước</li>
+            </ul>
+            <div class="relative mt-3 h-80"><canvas id="regionGroupChart" role="img" aria-label="Biểu đồ cột nhóm doanh thu theo vùng, kỳ này và cùng kỳ năm trước"></canvas></div>
+          </article>
+
+          <article class="rounded-2xl border border-line bg-surface/80 p-5 shadow-2xl shadow-black/40 backdrop-blur sm:p-6">
+            <div class="flex items-start justify-between gap-3">
+              <h3 class="font-heading text-base font-bold text-white">Top 10 tỉnh / thành phố</h3>
+              <span class="shrink-0 rounded-md border border-line bg-elevated px-2 py-0.5 text-xs text-slate-400">Cột ngang</span>
+            </div>
+            <p class="mt-1 text-xs text-slate-500">Đơn vị: triệu đồng · tổng trong kỳ</p>
+            <div class="relative mt-4 h-80"><canvas id="provinceChart" role="img" aria-label="Biểu đồ cột ngang doanh thu 10 tỉnh thành dẫn đầu"></canvas></div>
+          </article>
+
+          <article class="rounded-2xl border border-line bg-surface/80 p-5 shadow-2xl shadow-black/40 backdrop-blur sm:p-6">
+            <div class="flex items-start justify-between gap-3">
+              <h3 class="font-heading text-base font-bold text-white">Cơ cấu kênh bán theo vùng</h3>
+              <span class="shrink-0 rounded-md border border-line bg-elevated px-2 py-0.5 text-xs text-slate-400">Cột chồng 100%</span>
+            </div>
+            <p class="mt-1 text-xs text-slate-500">Tỷ trọng doanh thu của từng kênh trong mỗi vùng</p>
+            <ul id="mixLegend" class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-300" aria-label="Chú thích"></ul>
+            <div class="relative mt-3 h-80"><canvas id="regionMixChart" role="img" aria-label="Biểu đồ cột chồng 100% cơ cấu kênh bán theo vùng"></canvas></div>
+          </article>
+
+          <article class="rounded-2xl border border-line bg-surface/80 p-5 shadow-2xl shadow-black/40 backdrop-blur sm:p-6">
+            <div class="flex items-start justify-between gap-3">
+              <h3 class="font-heading text-base font-bold text-white">Tăng trưởng so với cùng kỳ</h3>
+              <span class="shrink-0 rounded-md border border-line bg-elevated px-2 py-0.5 text-xs text-slate-400">Cột phân kỳ</span>
+            </div>
+            <p class="mt-1 text-xs text-slate-500">% thay đổi doanh thu theo vùng</p>
+            <ul class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-300" aria-label="Chú thích">
+              <li class="flex items-center gap-2"><span class="h-2.5 w-2.5 rounded-sm" style="background:#3987E5"></span>Tăng</li>
+              <li class="flex items-center gap-2"><span class="h-2.5 w-2.5 rounded-sm" style="background:#D95926"></span>Giảm</li>
+            </ul>
+            <div class="relative mt-3 h-80"><canvas id="regionGrowthChart" role="img" aria-label="Biểu đồ cột phân kỳ tăng trưởng doanh thu theo vùng"></canvas></div>
+          </article>
+        </section>
+
+        <article class="rounded-2xl border border-line bg-surface/80 p-5 shadow-2xl shadow-black/40 backdrop-blur sm:p-6">
+          <h3 class="font-heading text-base font-bold text-white">Bảng doanh thu theo vùng</h3>
+          <p class="mt-1 text-xs text-slate-500">Đơn vị: triệu đồng · tổng trong kỳ</p>
+          <div class="mt-4 overflow-x-auto">
+            <table class="w-full min-w-[720px] text-left text-sm">
+              <thead class="border-b border-line text-xs uppercase tracking-wider text-slate-500">
+                <tr>
+                  <th scope="col" class="py-3 pr-4 font-medium">Vùng</th>
+                  <th scope="col" class="py-3 pr-4 text-right font-medium">Doanh thu</th>
+                  <th scope="col" class="py-3 pr-4 text-right font-medium">Tỷ trọng</th>
+                  <th scope="col" class="py-3 pr-4 text-right font-medium">Cùng kỳ</th>
+                  <th scope="col" class="py-3 pr-4 text-right font-medium">Tăng trưởng</th>
+                  <th scope="col" class="py-3 font-medium">Kênh dẫn đầu</th>
+                </tr>
+              </thead>
+              <tbody id="regionTable" class="tabular divide-y divide-line/60"></tbody>
+              <tfoot id="regionTotal" class="tabular border-t border-line font-semibold text-white"></tfoot>
+            </table>
+          </div>
+        </article>
+      </div>
+      <!-- /panel-region -->
+
+      <p class="pt-2 text-center text-sm text-slate-400">
+        Muốn đổi tài khoản? <a href="login.html" class="font-medium text-primary hover:text-primary-hover hover:underline">Quay lại trang đăng nhập</a>
+      </p>
+    </div>
+  </main>
+
+  <!-- Toast -->
+  <div id="toast" role="status" aria-live="polite"
+    class="pointer-events-none fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 translate-y-4 items-center gap-2 rounded-xl border border-line bg-elevated px-4 py-3 text-sm text-slate-100 opacity-0 shadow-xl transition duration-300">
+    <i data-lucide="check-circle-2" class="h-5 w-5 text-emerald-400"></i>
+    <span id="toastText"></span>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    /* ------------------------------------------------------------------
+     * Mock data (demo only). Money in millions of VND (triệu đồng).
+     * 12 months: Dec 2025 → Nov 2026.
+     * ---------------------------------------------------------------- */
+    const months       = ['T12/25', 'T1/26', 'T2/26', 'T3/26', 'T4/26', 'T5/26', 'T6/26', 'T7/26', 'T8/26', 'T9/26', 'T10/26', 'T11/26'];
+    const revenue      = [2450, 2780, 1690, 1950, 2080, 2210, 2360, 2290, 2470, 2620, 2810, 3420];
+    const prevRevenue  = [2010, 2190, 1480, 1620, 1700, 1790, 1880, 1850, 1960, 2080, 2250, 2690];
+    const cogsRate     = [0.61, 0.60, 0.63, 0.62, 0.62, 0.61, 0.61, 0.62, 0.61, 0.60, 0.60, 0.59];
+    const marketing    = [255, 290, 190, 205, 215, 228, 240, 236, 252, 268, 290, 365];
+    const opex         = [210, 225, 195, 198, 200, 204, 208, 206, 212, 216, 222, 248];
+    const aov          = [412, 438, 405, 398, 402, 410, 415, 408, 420, 425, 431, 398]; // thousand VND
+    const convRate     = [2.4, 2.7, 1.9, 2.0, 2.1, 2.2, 2.3, 2.2, 2.3, 2.4, 2.6, 3.4]; // %
+
+    const salesChannels = [
+      { name: 'Shopee', share: 0.34 },
+      { name: 'Website', share: 0.24 },
+      { name: 'TikTok Shop', share: 0.21 },
+      { name: 'Lazada', share: 0.14 },
+      { name: 'Tiki', share: 0.07 },
+    ];
+
+    const adChannels = [
+      { name: 'Facebook Ads',  share: 0.32, roas: 6.2,  ctr: 1.6, cvr: 2.6 },
+      { name: 'Google Ads',    share: 0.26, roas: 7.8,  ctr: 3.4, cvr: 3.9 },
+      { name: 'TikTok Ads',    share: 0.22, roas: 5.4,  ctr: 2.1, cvr: 2.2 },
+      { name: 'KOL / Affiliate', share: 0.14, roas: 4.6, ctr: 2.8, cvr: 1.8 },
+      { name: 'Email marketing', share: 0.06, roas: 14.5, ctr: 4.2, cvr: 5.1 },
+    ];
+
+    const products = [
+      { name: 'Tai nghe không dây Aero Pro', cat: 'Điện tử', price: 1290000, share: 0.118 },
+      { name: 'Áo khoác gió unisex', cat: 'Thời trang', price: 459000, share: 0.094 },
+      { name: 'Serum vitamin C 30ml', cat: 'Làm đẹp', price: 345000, share: 0.087 },
+      { name: 'Bình giữ nhiệt 750ml', cat: 'Gia dụng', price: 289000, share: 0.071 },
+      { name: 'Giày chạy bộ Stride 2', cat: 'Thể thao', price: 1150000, share: 0.066 },
+      { name: 'Nồi chiên không dầu 6L', cat: 'Gia dụng', price: 1690000, share: 0.058 },
+      { name: 'Sạc dự phòng 20.000mAh', cat: 'Điện tử', price: 499000, share: 0.049 },
+      { name: 'Balo laptop chống nước', cat: 'Phụ kiện', price: 620000, share: 0.041 },
+    ];
+
+    /* ------------------------------------------------------------------
+     * Derived monthly metrics
+     * ---------------------------------------------------------------- */
+    const cogs      = revenue.map((r, i) => Math.round(r * cogsRate[i]));
+    const profit    = revenue.map((r, i) => r - cogs[i] - marketing[i] - opex[i]);
+    const orders    = revenue.map((r, i) => Math.round((r * 1000) / aov[i]));
+    const sessions  = orders.map((o, i) => Math.round(o / (convRate[i] / 100)));
+    // Prior-year equivalents for the KPI comparison
+    const prevProfit   = prevRevenue.map((r, i) => Math.round(r - r * (cogsRate[i] + 0.01) - marketing[i] * 0.82 - opex[i] * 0.9));
+    const prevOrders   = prevRevenue.map((r, i) => Math.round((r * 1000) / (aov[i] * 0.94)));
+    const prevSessions = prevOrders.map((o, i) => Math.round(o / ((convRate[i] - 0.2) / 100)));
+
+    /* ------------------------------------------------------------------
+     * Formatting helpers (vi-VN)
+     * ---------------------------------------------------------------- */
+    const nf  = new Intl.NumberFormat('vi-VN');
+    const nf1 = new Intl.NumberFormat('vi-VN', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    const nf2 = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 2 });
+    const sum = (arr) => arr.reduce((a, b) => a + b, 0);
+    const money = (tr) => (Math.abs(tr) >= 1000 ? `${nf2.format(tr / 1000)} tỷ` : `${nf.format(Math.round(tr))} tr`);
+    const compact = (n) => (n >= 1e6 ? `${nf1.format(n / 1e6)} tr` : n >= 1e3 ? `${nf1.format(n / 1e3)} N` : nf.format(n));
+    const pct = (v) => `${nf1.format(v)}%`;
+    const escapeHtml = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+    /* ------------------------------------------------------------------
+     * Chart.js theme — values mirror the Tailwind tokens.
+     * Categorical slots validated for CVD on the #11131F surface.
+     * ---------------------------------------------------------------- */
+    const T = {
+      surface: '#11131F', elevated: '#181B2A', line: '#262A3D', primary: '#DF6B33',
+      text: '#E2E8F0', muted: '#94A3B8', faint: '#64748B',
+      series: ['#3987E5', '#D95926', '#199E70', '#C98500', '#D55181'],
+    };
+
+    Chart.defaults.font.family = 'Inter, sans-serif';
+    Chart.defaults.font.size = 12;
+    Chart.defaults.color = T.muted;
+    Chart.defaults.borderColor = T.line;
+    Chart.defaults.maintainAspectRatio = false;
+    Chart.defaults.plugins.legend.labels.usePointStyle = true;
+    Chart.defaults.plugins.legend.labels.boxWidth = 8;
+    Chart.defaults.plugins.legend.labels.boxHeight = 8;
+    Chart.defaults.plugins.legend.labels.color = T.text;
+    Object.assign(Chart.defaults.plugins.tooltip, {
+      backgroundColor: T.elevated, borderColor: T.line, borderWidth: 1,
+      titleColor: '#FFFFFF', bodyColor: T.text, padding: 10, cornerRadius: 10,
+      boxPadding: 4, usePointStyle: true,
+    });
+
+    const gridScale = (extra = {}) => ({
+      grid: { color: T.line, drawTicks: false },
+      border: { display: false },
+      ticks: { padding: 8, color: T.faint },
+      ...extra,
+    });
+    const noGrid = (extra = {}) => ({
+      grid: { display: false },
+      border: { color: T.line },
+      ticks: { padding: 6, color: T.faint },
+      ...extra,
+    });
+
+    // 1. Revenue line vs. prior year
+    const revenueChart = new Chart(document.getElementById('revenueChart'), {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [
+          {
+            label: 'Năm nay', data: [], borderColor: T.series[0], backgroundColor: T.series[0],
+            borderWidth: 2, tension: 0.3, pointRadius: 0, pointHoverRadius: 5,
+            pointHoverBorderColor: T.surface, pointHoverBorderWidth: 2, pointHitRadius: 12,
+          },
+          {
+            label: 'Cùng kỳ năm trước', data: [], borderColor: T.faint, backgroundColor: T.faint,
+            borderWidth: 2, borderDash: [5, 4], tension: 0.3, pointRadius: 0, pointHoverRadius: 5,
+            pointHoverBorderColor: T.surface, pointHoverBorderWidth: 2, pointHitRadius: 12,
+          },
+        ],
+      },
+      options: {
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: (c) => ` ${c.dataset.label}: ${nf.format(c.parsed.y)} tr đ` } },
+        },
+        scales: {
+          x: noGrid(),
+          y: gridScale({ beginAtZero: true, ticks: { padding: 8, color: T.faint, callback: (v) => nf.format(v) } }),
+        },
+      },
+    });
+
+    // 2. Revenue by sales channel (horizontal bar, single series)
+    const channelChart = new Chart(document.getElementById('channelChart'), {
+      type: 'bar',
+      data: {
+        labels: salesChannels.map((c) => c.name),
+        datasets: [{ label: 'Doanh thu', data: [], backgroundColor: T.primary, hoverBackgroundColor: '#E87D49', borderRadius: 4, borderSkipped: 'start', barPercentage: 0.7, categoryPercentage: 0.85 }],
+      },
+      options: {
+        indexAxis: 'y',
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: (c) => ` ${nf.format(Math.round(c.parsed.x))} tr đ (${pct(salesChannels[c.dataIndex].share * 100)})` } },
+        },
+        scales: {
+          x: gridScale({ beginAtZero: true, ticks: { padding: 8, color: T.faint, maxTicksLimit: 5, callback: (v) => nf.format(v) } }),
+          y: noGrid({ ticks: { color: T.text, padding: 6 } }),
+        },
+      },
+    });
+
+    // 3. Stacked P&L composition
+    const plSeries = [
+      { label: 'Giá vốn', color: T.series[0] },
+      { label: 'Chi phí marketing', color: T.series[1] },
+      { label: 'Chi phí vận hành', color: T.series[2] },
+      { label: 'Lợi nhuận', color: T.series[3] },
+    ];
+    document.getElementById('plLegend').innerHTML = plSeries.map((s) => `<li class="flex items-center gap-2"><span class="h-2.5 w-2.5 rounded-sm" style="background:${s.color}"></span>${s.label}</li>`).join('');
+    const plChart = new Chart(document.getElementById('plChart'), {
+      type: 'bar',
+      data: {
+        labels: [],
+        datasets: plSeries.map((s, i) => ({
+          label: s.label, data: [], backgroundColor: s.color, stack: 'pl',
+          borderColor: T.surface, borderWidth: { top: 2, bottom: 0, left: 0, right: 0 },
+          borderRadius: i === plSeries.length - 1 ? { topLeft: 4, topRight: 4 } : 0,
+          borderSkipped: false, barPercentage: 0.7, categoryPercentage: 0.8,
+        })),
+      },
+      options: {
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            itemSort: (a, b) => b.datasetIndex - a.datasetIndex,
+            callbacks: {
+              label: (c) => ` ${c.dataset.label}: ${nf.format(c.parsed.y)} tr đ`,
+              footer: (items) => `Doanh thu: ${nf.format(sum(items.map((i) => i.parsed.y)))} tr đ`,
+            },
+          },
+        },
+        scales: {
+          x: noGrid({ stacked: true }),
+          y: gridScale({ stacked: true, beginAtZero: true, ticks: { padding: 8, color: T.faint, callback: (v) => nf.format(v) } }),
+        },
+      },
+    });
+
+    // 4. Conversion funnel
+    const funnelSteps = ['Lượt truy cập', 'Xem sản phẩm', 'Thêm vào giỏ', 'Bắt đầu thanh toán', 'Đặt hàng thành công'];
+    const funnelChart = new Chart(document.getElementById('funnelChart'), {
+      type: 'bar',
+      data: {
+        labels: funnelSteps,
+        datasets: [{ label: 'Số lượt', data: [], backgroundColor: T.series[0], hoverBackgroundColor: '#5A9DEB', borderRadius: 4, borderSkipped: 'start', barPercentage: 0.7, categoryPercentage: 0.85 }],
+      },
+      options: {
+        indexAxis: 'y',
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (c) => {
+                const top = c.dataset.data[0] || 1;
+                const prev = c.dataIndex > 0 ? c.dataset.data[c.dataIndex - 1] : null;
+                const lines = [` ${nf.format(c.parsed.x)} lượt · ${pct((c.parsed.x / top) * 100)} lượt truy cập`];
+                if (prev) lines.push(` Giữ lại ${pct((c.parsed.x / prev) * 100)} so với bước trước`);
+                return lines;
+              },
+            },
+          },
+        },
+        scales: {
+          x: gridScale({ beginAtZero: true, ticks: { padding: 8, color: T.faint, maxTicksLimit: 4, maxRotation: 0, callback: (v) => compact(v) } }),
+          y: noGrid({ ticks: { color: T.text, padding: 6 } }),
+        },
+      },
+    });
+
+    // 5. ROAS by ad channel
+    const roasChart = new Chart(document.getElementById('roasChart'), {
+      type: 'bar',
+      data: {
+        labels: adChannels.map((c) => c.name),
+        datasets: [{ label: 'ROAS', data: adChannels.map((c) => c.roas), backgroundColor: T.primary, hoverBackgroundColor: '#E87D49', borderRadius: 4, borderSkipped: 'start', barPercentage: 0.6, categoryPercentage: 0.85 }],
+      },
+      options: {
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: (c) => ` ROAS: ${nf1.format(c.parsed.y)} lần` } },
+        },
+        scales: {
+          x: noGrid({ ticks: { color: T.text, padding: 6, autoSkip: false, maxRotation: 0, callback(v) { const l = this.getLabelForValue(v); return l.split(' '); } } }),
+          y: gridScale({ beginAtZero: true, ticks: { padding: 8, color: T.faint, callback: (v) => `${v}x` } }),
+        },
+      },
+    });
+
+    /* ------------------------------------------------------------------
+     * Rendering per selected period
+     * ---------------------------------------------------------------- */
+    const kpiGrid = document.getElementById('kpiGrid');
+
+    function deltaBadge(cur, prev) {
+      const d = prev ? ((cur - prev) / Math.abs(prev)) * 100 : 0;
+      const up = d >= 0;
+      return `<span class="inline-flex items-center gap-1 rounded-lg px-2 py-0.5 text-xs font-medium ${up ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}">
+        <i data-lucide="${up ? 'trending-up' : 'trending-down'}" class="h-3.5 w-3.5"></i>${up ? '+' : ''}${nf1.format(d)}%</span>`;
+    }
+
+    function kpiTile({ icon, label, value, sub, cur, prev }) {
+      return `<div class="rounded-2xl border border-line bg-surface/80 p-5 shadow-2xl shadow-black/40 backdrop-blur">
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-sm text-slate-400">${label}</span>
+          <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/15 text-primary"><i data-lucide="${icon}" class="h-4 w-4"></i></span>
+        </div>
+        <p class="tabular mt-3 font-heading text-2xl font-bold text-white sm:text-3xl">${value}</p>
+        <div class="mt-2 flex flex-wrap items-center gap-2">
+          ${deltaBadge(cur, prev)}
+          <span class="text-xs text-slate-500">${sub}</span>
+        </div>
+      </div>`;
+    }
+
+    function renderKpis(s) {
+      const rev = sum(s.revenue), pRev = sum(s.prevRevenue);
+      const pro = sum(s.profit), pPro = sum(s.prevProfit);
+      const ord = sum(s.orders), pOrd = sum(s.prevOrders);
+      const ses = sum(s.sessions), pSes = sum(s.prevSessions);
+      const cr = (ord / ses) * 100, pCr = (pOrd / pSes) * 100;
+      kpiGrid.innerHTML = [
+        kpiTile({ icon: 'wallet', label: 'Doanh thu', value: `${money(rev)} đ`, sub: 'so với cùng kỳ', cur: rev, prev: pRev }),
+        kpiTile({ icon: 'piggy-bank', label: 'Lợi nhuận ròng', value: `${money(pro)} đ`, sub: `Biên LN ${pct((pro / rev) * 100)}`, cur: pro, prev: pPro }),
+        kpiTile({ icon: 'package', label: 'Đơn hàng', value: nf.format(ord), sub: `Giá trị TB ${nf.format(Math.round((rev * 1e6) / ord / 1000))}N đ`, cur: ord, prev: pOrd }),
+        kpiTile({ icon: 'mouse-pointer-click', label: 'Tỷ lệ chuyển đổi', value: pct(cr), sub: `${compact(ses)} lượt truy cập`, cur: cr, prev: pCr }),
+      ].join('');
+    }
+
+    function renderProducts(totalRevenue) {
+      document.getElementById('productTable').innerHTML = products.map((p, i) => {
+        const rev = totalRevenue * p.share;
+        const qty = Math.round((rev * 1e6) / p.price);
+        const sharePct = p.share * 100;
+        return `<tr class="transition hover:bg-elevated/60">
+          <td class="py-3 pr-4 text-slate-500">${i + 1}</td>
+          <td class="py-3 pr-4 font-medium text-white">${escapeHtml(p.name)}</td>
+          <td class="py-3 pr-4"><span class="whitespace-nowrap rounded-md border border-line bg-elevated px-2 py-0.5 text-xs text-slate-300">${escapeHtml(p.cat)}</span></td>
+          <td class="py-3 pr-4 text-right text-slate-300">${nf.format(p.price)}</td>
+          <td class="py-3 pr-4 text-right text-slate-300">${nf.format(qty)}</td>
+          <td class="py-3 pr-4 text-right font-medium text-white">${nf.format(Math.round(rev))}</td>
+          <td class="py-3">
+            <div class="flex items-center gap-2">
+              <div class="h-1.5 w-20 overflow-hidden rounded-full bg-elevated"><div class="h-full rounded-full bg-primary" style="width:${(sharePct / products[0].share / 100) * 100}%"></div></div>
+              <span class="text-xs text-slate-400">${pct(sharePct)}</span>
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    function renderPlTable(s) {
+      const rows = s.months.map((m, i) => ({ m, i })).reverse();
+      document.getElementById('plTable').innerHTML = rows.map(({ m, i }) => {
+        const margin = (s.profit[i] / s.revenue[i]) * 100;
+        const yoy = ((s.revenue[i] - s.prevRevenue[i]) / s.prevRevenue[i]) * 100;
+        return `<tr class="transition hover:bg-elevated/60">
+          <th scope="row" class="py-3 pr-4 font-medium text-white">${m}</th>
+          <td class="py-3 pr-4 text-right font-medium text-white">${nf.format(s.revenue[i])}</td>
+          <td class="py-3 pr-4 text-right text-slate-300">${nf.format(s.cogs[i])}</td>
+          <td class="py-3 pr-4 text-right text-slate-300">${nf.format(s.marketing[i])}</td>
+          <td class="py-3 pr-4 text-right text-slate-300">${nf.format(s.opex[i])}</td>
+          <td class="py-3 pr-4 text-right font-medium text-white">${nf.format(s.profit[i])}</td>
+          <td class="py-3 pr-4 text-right text-slate-300">${pct(margin)}</td>
+          <td class="py-3 text-right ${yoy >= 0 ? 'text-emerald-400' : 'text-red-400'}">${yoy >= 0 ? '▲ +' : '▼ '}${nf1.format(yoy)}%</td>
+        </tr>`;
+      }).join('');
+
+      const tRev = sum(s.revenue), tPro = sum(s.profit), tPrev = sum(s.prevRevenue);
+      const tYoy = ((tRev - tPrev) / tPrev) * 100;
+      document.getElementById('plTotal').innerHTML = `<tr>
+        <th scope="row" class="py-3 pr-4">Tổng kỳ</th>
+        <td class="py-3 pr-4 text-right">${nf.format(tRev)}</td>
+        <td class="py-3 pr-4 text-right">${nf.format(sum(s.cogs))}</td>
+        <td class="py-3 pr-4 text-right">${nf.format(sum(s.marketing))}</td>
+        <td class="py-3 pr-4 text-right">${nf.format(sum(s.opex))}</td>
+        <td class="py-3 pr-4 text-right">${nf.format(tPro)}</td>
+        <td class="py-3 pr-4 text-right">${pct((tPro / tRev) * 100)}</td>
+        <td class="py-3 text-right ${tYoy >= 0 ? 'text-emerald-400' : 'text-red-400'}">${tYoy >= 0 ? '▲ +' : '▼ '}${nf1.format(tYoy)}%</td>
+      </tr>`;
+    }
+
+    function renderMarketing(s) {
+      const totalSpend = sum(s.marketing);
+      const avgAov = (sum(s.revenue) * 1000) / sum(s.orders); // thousand VND
+      const rows = adChannels.map((c) => {
+        const spend = totalSpend * c.share;
+        const rev = spend * c.roas;
+        const ord = Math.round((rev * 1000) / avgAov);
+        const clicks = Math.round(ord / (c.cvr / 100));
+        const impressions = Math.round(clicks / (c.ctr / 100));
+        return { ...c, spend, rev, ord, clicks, impressions, cpa: (spend * 1e6) / ord };
+      });
+      document.getElementById('mktTable').innerHTML = rows.map((r) => `<tr class="transition hover:bg-elevated/60">
+          <th scope="row" class="py-3 pr-4 font-medium text-white">${escapeHtml(r.name)}</th>
+          <td class="py-3 pr-4 text-right text-slate-300">${nf.format(Math.round(r.spend))}</td>
+          <td class="py-3 pr-4 text-right text-slate-300">${nf.format(r.impressions)}</td>
+          <td class="py-3 pr-4 text-right text-slate-300">${nf.format(r.clicks)}</td>
+          <td class="py-3 pr-4 text-right text-slate-300">${pct(r.ctr)}</td>
+          <td class="py-3 pr-4 text-right text-slate-300">${nf.format(r.ord)}</td>
+          <td class="py-3 pr-4 text-right font-medium text-white">${nf.format(Math.round(r.rev))}</td>
+          <td class="py-3 pr-4 text-right font-medium text-white">${nf1.format(r.roas)}x</td>
+          <td class="py-3 text-right text-slate-300">${nf.format(Math.round(r.cpa))}</td>
+        </tr>`).join('');
+
+      const t = rows.reduce((a, r) => ({ spend: a.spend + r.spend, rev: a.rev + r.rev, ord: a.ord + r.ord, clicks: a.clicks + r.clicks, imp: a.imp + r.impressions }), { spend: 0, rev: 0, ord: 0, clicks: 0, imp: 0 });
+      document.getElementById('mktTotal').innerHTML = `<tr>
+        <th scope="row" class="py-3 pr-4">Tổng cộng</th>
+        <td class="py-3 pr-4 text-right">${nf.format(Math.round(t.spend))}</td>
+        <td class="py-3 pr-4 text-right">${nf.format(t.imp)}</td>
+        <td class="py-3 pr-4 text-right">${nf.format(t.clicks)}</td>
+        <td class="py-3 pr-4 text-right">${pct((t.clicks / t.imp) * 100)}</td>
+        <td class="py-3 pr-4 text-right">${nf.format(t.ord)}</td>
+        <td class="py-3 pr-4 text-right">${nf.format(Math.round(t.rev))}</td>
+        <td class="py-3 pr-4 text-right">${nf1.format(t.rev / t.spend)}x</td>
+        <td class="py-3 text-right">${nf.format(Math.round((t.spend * 1e6) / t.ord))}</td>
+      </tr>`;
+    }
+
+    function slice(n) {
+      const pick = (arr) => arr.slice(-n);
+      return {
+        months: pick(months), revenue: pick(revenue), prevRevenue: pick(prevRevenue),
+        cogs: pick(cogs), marketing: pick(marketing), opex: pick(opex), profit: pick(profit),
+        prevProfit: pick(prevProfit), orders: pick(orders), prevOrders: pick(prevOrders),
+        sessions: pick(sessions), prevSessions: pick(prevSessions),
+      };
+    }
+
+    function render(n) {
+      const s = slice(n);
+      const totalRevenue = sum(s.revenue);
+
+      renderKpis(s);
+
+      revenueChart.data.labels = s.months;
+      revenueChart.data.datasets[0].data = s.revenue;
+      revenueChart.data.datasets[1].data = s.prevRevenue;
+      revenueChart.update();
+
+      channelChart.data.datasets[0].data = salesChannels.map((c) => Math.round(totalRevenue * c.share));
+      channelChart.update();
+
+      plChart.data.labels = s.months;
+      [s.cogs, s.marketing, s.opex, s.profit].forEach((d, i) => { plChart.data.datasets[i].data = d; });
+      plChart.update();
+
+      const visits = sum(s.sessions), ord = sum(s.orders);
+      funnelChart.data.datasets[0].data = [visits, Math.round(visits * 0.56), Math.round(visits * 0.17), Math.round(ord * 1.65), ord];
+      funnelChart.update();
+
+      renderProducts(totalRevenue);
+      renderPlTable(s);
+      renderMarketing(s);
+      renderRegion(s);
+
+      lucide.createIcons();
+    }
+
+    /* ==================================================================
+     * TAB: Top sales staff
+     * Monthly revenue (triệu đ) for T7 → T11/2026. Month = T11 (vs T10),
+     * quarter = Q4 to date T10+T11 (vs Q3 = T7+T8+T9).
+     * ================================================================ */
+    const staff = [
+      { name: 'Nguyễn Minh Anh',   area: 'Hà Nội',     rev: [312, 298, 325, 341, 402], target: 350, aov: 452 },
+      { name: 'Trần Quốc Bảo',     area: 'TP.HCM',     rev: [335, 342, 318, 356, 388], target: 360, aov: 468 },
+      { name: 'Lê Thu Hà',         area: 'TP.HCM',     rev: [288, 301, 296, 332, 395], target: 340, aov: 421 },
+      { name: 'Phạm Đức Huy',      area: 'Đà Nẵng',    rev: [240, 252, 261, 288, 331], target: 300, aov: 436 },
+      { name: 'Hoàng Gia Linh',    area: 'Hà Nội',     rev: [276, 268, 283, 301, 322], target: 320, aov: 398 },
+      { name: 'Võ Thanh Tùng',     area: 'Cần Thơ',    rev: [198, 215, 224, 251, 298], target: 260, aov: 375 },
+      { name: 'Đặng Ngọc Mai',     area: 'TP.HCM',     rev: [265, 259, 248, 277, 315], target: 300, aov: 409 },
+      { name: 'Bùi Văn Khánh',     area: 'Hải Phòng',  rev: [221, 230, 236, 262, 287], target: 280, aov: 388 },
+      { name: 'Đỗ Phương Thảo',    area: 'Hà Nội',     rev: [254, 247, 260, 270, 279], target: 300, aov: 415 },
+      { name: 'Ngô Hải Nam',       area: 'Bình Dương', rev: [205, 198, 219, 244, 276], target: 260, aov: 392 },
+      { name: 'Lý Bảo Ngọc',       area: 'Đà Nẵng',    rev: [187, 195, 203, 236, 268], target: 250, aov: 404 },
+      { name: 'Trương Hoàng Phúc', area: 'Đồng Nai',   rev: [176, 182, 190, 218, 251], target: 240, aov: 381 },
+    ];
+    const staffPeriods = {
+      month:   { label: 'Tháng 11/2026 · so với tháng 10/2026', cur: [4], prev: [3], targetMul: 1 },
+      quarter: { label: 'Quý 4/2026 (01/10 – 30/11) · so với quý 3/2026', cur: [3, 4], prev: [0, 1, 2], targetMul: 2 },
+    };
+    const initials = (name) => name.split(' ').slice(-2).map((w) => w[0]).join('').toUpperCase();
+
+    const staffChart = new Chart(document.getElementById('staffChart'), {
+      type: 'bar',
+      data: { labels: [], datasets: [{ label: 'Doanh thu', data: [], backgroundColor: T.primary, hoverBackgroundColor: '#E87D49', borderRadius: 4, borderSkipped: 'start', barPercentage: 0.7, categoryPercentage: 0.85 }] },
+      options: {
+        indexAxis: 'y',
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: (c) => {
+            const r = staffChart.$rows[c.dataIndex];
+            return [` Doanh thu: ${nf.format(r.revenue)} tr đ`, ` Đạt chỉ tiêu: ${pct(r.achieve)}`];
+          } } },
+        },
+        scales: {
+          x: gridScale({ beginAtZero: true, ticks: { padding: 8, color: T.faint, maxTicksLimit: 5, callback: (v) => nf.format(v) } }),
+          y: noGrid({ ticks: { color: T.text, padding: 6 } }),
+        },
+      },
+    });
+
+    function rankStaff(idx, targetMul) {
+      return staff
+        .map((p) => {
+          const revenue = sum(idx.map((i) => p.rev[i]));
+          const target = p.target * targetMul;
+          return { ...p, revenue, target, achieve: (revenue / target) * 100, orders: Math.round((revenue * 1000) / p.aov) };
+        })
+        .sort((a, b) => b.revenue - a.revenue);
+    }
+
+    function renderStaff(periodKey) {
+      const P = staffPeriods[periodKey];
+      document.getElementById('staffPeriodLabel').textContent = P.label;
+
+      const ranked = rankStaff(P.cur, P.targetMul);
+      const prevRank = new Map(rankStaff(P.prev, 1).map((p, i) => [p.name, i + 1]));
+      const top = ranked.slice(0, 10).map((p, i) => ({ ...p, rank: i + 1, move: prevRank.get(p.name) - (i + 1) }));
+
+      // Podium
+      const medal = [
+        { icon: 'trophy', ring: 'border-primary/60', chip: 'bg-primary text-white' },
+        { icon: 'medal',  ring: 'border-line',       chip: 'bg-slate-300 text-surface' },
+        { icon: 'award',  ring: 'border-line',       chip: 'bg-elevated text-primary border border-line' },
+      ];
+      document.getElementById('staffPodium').innerHTML = top.slice(0, 3).map((p, i) => `
+        <div class="relative overflow-hidden rounded-2xl border ${medal[i].ring} bg-surface/80 p-5 shadow-2xl shadow-black/40 backdrop-blur">
+          ${i === 0 ? '<div aria-hidden="true" class="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-primary/20 blur-2xl"></div>' : ''}
+          <div class="relative flex items-center gap-3">
+            <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-line bg-elevated font-heading text-sm font-bold text-white">${initials(p.name)}</span>
+            <div class="min-w-0">
+              <p class="truncate font-heading font-bold text-white">${escapeHtml(p.name)}</p>
+              <p class="text-xs text-slate-400">${escapeHtml(p.area)}</p>
+            </div>
+            <span class="ml-auto inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold ${medal[i].chip}">
+              <i data-lucide="${medal[i].icon}" class="h-3.5 w-3.5"></i>#${p.rank}
+            </span>
+          </div>
+          <div class="relative mt-4 flex items-end justify-between gap-2">
+            <div>
+              <p class="text-xs text-slate-500">Doanh thu</p>
+              <p class="tabular font-heading text-xl font-bold text-white">${nf.format(p.revenue)} tr đ</p>
+            </div>
+            <p class="text-right text-xs text-slate-400">Đạt <span class="tabular font-semibold ${p.achieve >= 100 ? 'text-emerald-400' : 'text-slate-200'}">${pct(p.achieve)}</span><br>chỉ tiêu</p>
+          </div>
+        </div>`).join('');
+
+      // Chart
+      staffChart.$rows = top;
+      staffChart.data.labels = top.map((p) => p.name);
+      staffChart.data.datasets[0].data = top.map((p) => p.revenue);
+      staffChart.update();
+
+      // Team stats
+      const totalRev = sum(top.map((p) => p.revenue));
+      const hit = top.filter((p) => p.achieve >= 100).length;
+      const avgAch = sum(top.map((p) => p.achieve)) / top.length;
+      const best = [...top].sort((a, b) => b.move - a.move)[0];
+      const stat = (label, value, sub) => `<div><dt class="text-xs text-slate-500">${label}</dt><dd class="tabular mt-1 font-heading text-xl font-bold text-white">${value}</dd>${sub ? `<dd class="mt-0.5 text-xs text-slate-400">${sub}</dd>` : ''}</div>`;
+      document.getElementById('staffStats').innerHTML = [
+        stat('Tổng doanh thu top 10', `${money(totalRev)} đ`, `${pct((totalRev / sum(ranked.map((p) => p.revenue))) * 100)} doanh thu toàn đội`),
+        stat('Đạt chỉ tiêu', `${hit} / ${top.length} nhân viên`, `Tỷ lệ đạt trung bình ${pct(avgAch)}`),
+        stat('Tiến bộ nhiều nhất', escapeHtml(best.name), best.move > 0 ? `Tăng ${best.move} bậc so với kỳ trước` : 'Giữ nguyên thứ hạng'),
+      ].join('');
+
+      // Table
+      document.getElementById('staffTable').innerHTML = top.map((p) => {
+        const moveHtml = p.move > 0 ? `<span class="whitespace-nowrap text-xs text-emerald-400">▲ ${p.move}</span>`
+          : p.move < 0 ? `<span class="whitespace-nowrap text-xs text-red-400">▼ ${-p.move}</span>`
+          : '<span class="text-xs text-slate-500">–</span>';
+        const ok = p.achieve >= 100;
+        return `<tr class="transition hover:bg-elevated/60">
+          <td class="py-3 pr-4"><div class="flex items-center gap-2"><span class="w-6 font-heading font-bold ${p.rank <= 3 ? 'text-primary' : 'text-slate-400'}">${p.rank}</span>${moveHtml}</div></td>
+          <th scope="row" class="py-3 pr-4 font-medium text-white">
+            <div class="flex items-center gap-3">
+              <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-line bg-elevated text-xs font-semibold text-slate-200">${initials(p.name)}</span>
+              <span class="whitespace-nowrap">${escapeHtml(p.name)}</span>
+            </div>
+          </th>
+          <td class="whitespace-nowrap py-3 pr-4 text-slate-300">${escapeHtml(p.area)}</td>
+          <td class="py-3 pr-4 text-right font-medium text-white">${nf.format(p.revenue)}</td>
+          <td class="py-3 pr-4 text-right text-slate-300">${nf.format(p.orders)}</td>
+          <td class="py-3 pr-4 text-right text-slate-300">${nf.format(p.aov * 1000)}</td>
+          <td class="py-3">
+            <div class="flex items-center gap-2">
+              <div class="h-1.5 w-20 overflow-hidden rounded-full bg-elevated"><div class="h-full rounded-full ${ok ? 'bg-emerald-500' : 'bg-primary'}" style="width:${Math.min(p.achieve, 100)}%"></div></div>
+              <span class="whitespace-nowrap text-xs ${ok ? 'text-emerald-400' : 'text-slate-400'}">${pct(p.achieve)}${ok ? ' · Đạt' : ''}</span>
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    const staffButtons = document.querySelectorAll('#staffPeriodGroup [data-staff-period]');
+    function setStaffPeriod(key, announce) {
+      staffButtons.forEach((btn) => {
+        const active = btn.dataset.staffPeriod === key;
+        btn.setAttribute('aria-pressed', String(active));
+        btn.classList.toggle('bg-primary', active);
+        btn.classList.toggle('text-white', active);
+        btn.classList.toggle('text-slate-400', !active);
+      });
+      renderStaff(key);
+      try { localStorage.setItem('staffPeriod', key); } catch (_) {}
+      if (announce) showToast(key === 'month' ? 'Đang xem xếp hạng tháng này' : 'Đang xem xếp hạng quý này');
+    }
+    staffButtons.forEach((btn) => btn.addEventListener('click', () => setStaffPeriod(btn.dataset.staffPeriod, true)));
+
+    /* ==================================================================
+     * TAB: Revenue by region (follows the 3/6/12-month period filter)
+     * ================================================================ */
+    const regions = [
+      { name: 'Đông Nam Bộ',                         short: 'Đông Nam Bộ',     share: 0.38, prevShare: 0.36,  mix: [36, 25, 22, 12, 5] },
+      { name: 'Đồng bằng sông Hồng',                 short: 'ĐB sông Hồng',    share: 0.29, prevShare: 0.30,  mix: [33, 27, 19, 15, 6] },
+      { name: 'Bắc Trung Bộ & Duyên hải miền Trung', short: 'Miền Trung',      share: 0.12, prevShare: 0.123, mix: [35, 20, 23, 15, 7] },
+      { name: 'Đồng bằng sông Cửu Long',             short: 'ĐB Cửu Long',     share: 0.11, prevShare: 0.105, mix: [38, 14, 30, 13, 5] },
+      { name: 'Trung du & miền núi phía Bắc',        short: 'Trung du MN Bắc', share: 0.06, prevShare: 0.06,  mix: [30, 18, 28, 17, 7] },
+      { name: 'Tây Nguyên',                          short: 'Tây Nguyên',      share: 0.04, prevShare: 0.052, mix: [34, 16, 26, 16, 8] },
+    ];
+    const provinces = [
+      ['TP. Hồ Chí Minh', 0.235], ['Hà Nội', 0.198], ['Bình Dương', 0.052], ['Đồng Nai', 0.041], ['Hải Phòng', 0.037],
+      ['Đà Nẵng', 0.034], ['Cần Thơ', 0.026], ['Quảng Ninh', 0.019], ['Khánh Hòa', 0.017], ['Bắc Ninh', 0.016],
+    ];
+    const regionTitle = (items) => regions[items[0].dataIndex].name;
+
+    const regionGroupChart = new Chart(document.getElementById('regionGroupChart'), {
+      type: 'bar',
+      data: {
+        labels: regions.map((r) => r.short.split(' ')),
+        datasets: [
+          { label: 'Kỳ này', data: [], backgroundColor: T.series[0], borderRadius: 4, borderSkipped: 'start', borderColor: T.surface, borderWidth: { right: 1 }, barPercentage: 0.85, categoryPercentage: 0.7 },
+          { label: 'Cùng kỳ năm trước', data: [], backgroundColor: T.faint, borderRadius: 4, borderSkipped: 'start', borderColor: T.surface, borderWidth: { left: 1 }, barPercentage: 0.85, categoryPercentage: 0.7 },
+        ],
+      },
+      options: {
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { title: regionTitle, label: (c) => ` ${c.dataset.label}: ${nf.format(c.parsed.y)} tr đ` } },
+        },
+        scales: {
+          x: noGrid({ ticks: { color: T.text, padding: 6, autoSkip: false, maxRotation: 0 } }),
+          y: gridScale({ beginAtZero: true, ticks: { padding: 8, color: T.faint, maxTicksLimit: 6, callback: (v) => nf.format(v) } }),
+        },
+      },
+    });
+
+    const provinceChart = new Chart(document.getElementById('provinceChart'), {
+      type: 'bar',
+      data: { labels: provinces.map((p) => p[0]), datasets: [{ label: 'Doanh thu', data: [], backgroundColor: T.primary, hoverBackgroundColor: '#E87D49', borderRadius: 4, borderSkipped: 'start', barPercentage: 0.7, categoryPercentage: 0.85 }] },
+      options: {
+        indexAxis: 'y',
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: (c) => ` ${nf.format(c.parsed.x)} tr đ (${pct(provinces[c.dataIndex][1] * 100)} tổng doanh thu)` } },
+        },
+        scales: {
+          x: gridScale({ beginAtZero: true, ticks: { padding: 8, color: T.faint, maxTicksLimit: 5, callback: (v) => nf.format(v) } }),
+          y: noGrid({ ticks: { color: T.text, padding: 6 } }),
+        },
+      },
+    });
+
+    document.getElementById('mixLegend').innerHTML = salesChannels.map((c, i) => `<li class="flex items-center gap-2"><span class="h-2.5 w-2.5 rounded-sm" style="background:${T.series[i]}"></span>${c.name}</li>`).join('');
+    const regionMixChart = new Chart(document.getElementById('regionMixChart'), {
+      type: 'bar',
+      data: {
+        labels: regions.map((r) => r.short),
+        datasets: salesChannels.map((c, i) => ({
+          label: c.name, data: regions.map((r) => r.mix[i]), backgroundColor: T.series[i], stack: 'mix',
+          borderColor: T.surface, borderWidth: { right: 2, left: 0, top: 0, bottom: 0 },
+          borderRadius: i === salesChannels.length - 1 ? { topRight: 4, bottomRight: 4 } : 0,
+          borderSkipped: false, barPercentage: 0.7, categoryPercentage: 0.85,
+        })),
+      },
+      options: {
+        indexAxis: 'y',
+        interaction: { mode: 'index', intersect: false, axis: 'y' },
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { title: regionTitle, label: (c) => ` ${c.dataset.label}: ${c.parsed.x}%` } },
+        },
+        scales: {
+          x: gridScale({ stacked: true, min: 0, max: 100, ticks: { padding: 8, color: T.faint, stepSize: 25, callback: (v) => `${v}%` } }),
+          y: noGrid({ stacked: true, ticks: { color: T.text, padding: 6 } }),
+        },
+      },
+    });
+
+    const regionGrowthChart = new Chart(document.getElementById('regionGrowthChart'), {
+      type: 'bar',
+      data: { labels: regions.map((r) => r.short), datasets: [{ label: 'Tăng trưởng', data: [], backgroundColor: [], borderRadius: 4, borderSkipped: 'start', barPercentage: 0.7, categoryPercentage: 0.85 }] },
+      options: {
+        indexAxis: 'y',
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { title: regionTitle, label: (c) => ` ${c.parsed.x >= 0 ? '+' : ''}${nf1.format(c.parsed.x)}% so với cùng kỳ` } },
+        },
+        scales: {
+          x: gridScale({
+            grid: { color: (ctx) => (ctx.tick && ctx.tick.value === 0 ? T.muted : T.line), drawTicks: false },
+            ticks: { padding: 8, color: T.faint, maxRotation: 0, maxTicksLimit: 6, callback: (v) => `${v > 0 ? '+' : ''}${v}%` },
+          }),
+          y: noGrid({ ticks: { color: T.text, padding: 6 } }),
+        },
+      },
+    });
+
+    function renderRegion(s) {
+      const total = sum(s.revenue), prevTotal = sum(s.prevRevenue);
+      document.getElementById('regionPeriodLabel').textContent = `${s.months.length} tháng gần nhất (${s.months[0]} – ${s.months[s.months.length - 1]}) · đổi kỳ ở bộ lọc phía trên`;
+
+      const rows = regions.map((r) => {
+        const cur = Math.round(total * r.share), prev = Math.round(prevTotal * r.prevShare);
+        const lead = r.mix.indexOf(Math.max(...r.mix));
+        return { ...r, cur, prev, growth: ((cur - prev) / prev) * 100, lead: salesChannels[lead].name, leadPct: r.mix[lead] };
+      });
+
+      regionGroupChart.data.datasets[0].data = rows.map((r) => r.cur);
+      regionGroupChart.data.datasets[1].data = rows.map((r) => r.prev);
+      regionGroupChart.update();
+
+      provinceChart.data.datasets[0].data = provinces.map((p) => Math.round(total * p[1]));
+      provinceChart.update();
+
+      regionGrowthChart.data.datasets[0].data = rows.map((r) => Number(r.growth.toFixed(1)));
+      regionGrowthChart.data.datasets[0].backgroundColor = rows.map((r) => (r.growth >= 0 ? T.series[0] : T.series[1]));
+      regionGrowthChart.update();
+
+      document.getElementById('regionTable').innerHTML = rows.map((r) => `<tr class="transition hover:bg-elevated/60">
+          <th scope="row" class="py-3 pr-4 font-medium text-white">${escapeHtml(r.name)}</th>
+          <td class="py-3 pr-4 text-right font-medium text-white">${nf.format(r.cur)}</td>
+          <td class="py-3 pr-4 text-right text-slate-300">${pct(r.share * 100)}</td>
+          <td class="py-3 pr-4 text-right text-slate-300">${nf.format(r.prev)}</td>
+          <td class="py-3 pr-4 text-right ${r.growth >= 0 ? 'text-emerald-400' : 'text-red-400'}">${r.growth >= 0 ? '▲ +' : '▼ '}${nf1.format(r.growth)}%</td>
+          <td class="whitespace-nowrap py-3 text-slate-300">${r.lead} <span class="text-slate-500">(${r.leadPct}%)</span></td>
+        </tr>`).join('');
+      const tCur = sum(rows.map((r) => r.cur)), tPrev = sum(rows.map((r) => r.prev)), tG = ((tCur - tPrev) / tPrev) * 100;
+      document.getElementById('regionTotal').innerHTML = `<tr>
+        <th scope="row" class="py-3 pr-4">Toàn quốc</th>
+        <td class="py-3 pr-4 text-right">${nf.format(tCur)}</td>
+        <td class="py-3 pr-4 text-right">100%</td>
+        <td class="py-3 pr-4 text-right">${nf.format(tPrev)}</td>
+        <td class="py-3 pr-4 text-right ${tG >= 0 ? 'text-emerald-400' : 'text-red-400'}">${tG >= 0 ? '▲ +' : '▼ '}${nf1.format(tG)}%</td>
+        <td class="py-3"></td>
+      </tr>`;
+    }
+
+    /* ==================================================================
+     * Tabs (WAI-ARIA tabs pattern, remembered per browser)
+     * ================================================================ */
+    const tabs = [...document.querySelectorAll('[role="tab"]')];
+    const rangeWrap = document.getElementById('rangeWrap');
+
+    function selectTab(id, focus) {
+      tabs.forEach((t) => {
+        const on = t.dataset.tab === id;
+        t.setAttribute('aria-selected', String(on));
+        t.tabIndex = on ? 0 : -1;
+        t.classList.toggle('bg-primary', on);
+        t.classList.toggle('text-white', on);
+        t.classList.toggle('text-slate-400', !on);
+        t.classList.toggle('hover:text-white', !on);
+        document.getElementById(t.getAttribute('aria-controls')).classList.toggle('hidden', !on);
+        if (on && focus) t.focus();
+      });
+      // The 3/6/12-month filter drives overview & region; staff has its own month/quarter switch.
+      rangeWrap.classList.toggle('hidden', id === 'staff');
+      Object.values(Chart.instances).forEach((c) => c.resize());
+      try { localStorage.setItem('reportTab', id); } catch (_) {}
+    }
+
+    tabs.forEach((t, i) => {
+      t.addEventListener('click', () => selectTab(t.dataset.tab));
+      t.addEventListener('keydown', (e) => {
+        const map = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 };
+        if (!(e.key in map)) return;
+        e.preventDefault();
+        selectTab(tabs[(map[e.key] + tabs.length) % tabs.length].dataset.tab, true);
+      });
+    });
+
+    /* ------------------------------------------------------------------
+     * Period filter (remembered per browser)
+     * ---------------------------------------------------------------- */
+    const rangeButtons = document.querySelectorAll('#rangeGroup [data-range]');
+    const toast = document.getElementById('toast');
+    const toastText = document.getElementById('toastText');
+    let toastTimer;
+
+    function showToast(message) {
+      toastText.textContent = message;
+      toast.classList.remove('opacity-0', 'translate-y-4');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.add('opacity-0', 'translate-y-4'), 2000);
+    }
+
+    function setRange(n, announce) {
+      rangeButtons.forEach((btn) => {
+        const active = Number(btn.dataset.range) === n;
+        btn.setAttribute('aria-pressed', String(active));
+        btn.classList.toggle('bg-primary', active);
+        btn.classList.toggle('text-white', active);
+        btn.classList.toggle('text-slate-400', !active);
+      });
+      render(n);
+      try { localStorage.setItem('reportRange', String(n)); } catch (_) {}
+      if (announce) showToast(`Đã cập nhật báo cáo ${n} tháng gần nhất`);
+    }
+
+    rangeButtons.forEach((btn) => btn.addEventListener('click', () => setRange(Number(btn.dataset.range), true)));
+
+    let initialRange = 6;
+    try {
+      const saved = Number(localStorage.getItem('reportRange'));
+      if ([3, 6, 12].includes(saved)) initialRange = saved;
+    } catch (_) {}
+    setRange(initialRange, false);
+
+    let initialStaff = 'month', initialTab = 'overview';
+    try {
+      const sp = localStorage.getItem('staffPeriod');
+      if (sp in staffPeriods) initialStaff = sp;
+      const tb = localStorage.getItem('reportTab');
+      if (tabs.some((t) => t.dataset.tab === tb)) initialTab = tb;
+    } catch (_) {}
+    const hashTab = location.hash.slice(1);
+    if (tabs.some((t) => t.dataset.tab === hashTab)) initialTab = hashTab;
+    setStaffPeriod(initialStaff, false);
+    selectTab(initialTab, false);
+  </script>
+</body>
+</html>

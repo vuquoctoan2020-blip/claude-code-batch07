@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Đăng ký tài khoản</title>
+
+  <!-- Fonts: Be Vietnam Pro (headings, full Vietnamese support) + Inter (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:wght@600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            base: '#090A14',
+            surface: '#11131F',
+            elevated: '#181B2A',
+            line: '#262A3D',
+            primary: {
+              DEFAULT: '#DF6B33',
+              hover: '#E87D49',
+              active: '#C85A26',
+            },
+          },
+          fontFamily: {
+            heading: ['Be Vietnam Pro', 'Poppins', 'sans-serif'],
+            sans: ['Inter', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+
+  <style>
+    body { background-color: #090A14; }
+    /* Keep autofilled inputs dark */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus {
+      -webkit-text-fill-color: #F1F2F6;
+      -webkit-box-shadow: 0 0 0 1000px #181B2A inset;
+      caret-color: #F1F2F6;
+      transition: background-color 9999s ease-in-out 0s;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen bg-base font-sans text-slate-200 antialiased">
+  <!-- Background glow -->
+  <div aria-hidden="true" class="pointer-events-none fixed inset-0 overflow-hidden">
+    <div class="absolute -top-40 -left-40 h-[28rem] w-[28rem] rounded-full bg-primary/20 blur-[120px]"></div>
+    <div class="absolute -bottom-48 -right-32 h-[30rem] w-[30rem] rounded-full bg-primary/10 blur-[140px]"></div>
+  </div>
+
+  <main class="relative flex min-h-screen items-center justify-center px-4 py-10 sm:px-6 lg:px-8">
+    <div class="w-full max-w-2xl overflow-hidden rounded-2xl border border-line bg-surface/80 shadow-2xl shadow-black/40 backdrop-blur">
+
+      <section class="p-6 sm:p-10">
+        <!-- Back to sign in -->
+        <a href="login.html" class="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-slate-400 transition hover:text-primary">
+          <i data-lucide="arrow-left" class="h-4 w-4"></i>
+          Quay lại trang đăng nhập
+        </a>
+
+        <!-- Logo -->
+        <div class="mb-8 flex items-center gap-2">
+          <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-white">
+            <i data-lucide="zap" class="h-5 w-5"></i>
+          </span>
+          <span class="font-heading text-lg font-bold tracking-tight text-white">Nebula</span>
+        </div>
+
+        <header>
+          <h1 class="font-heading text-2xl font-bold text-white sm:text-3xl">Tạo tài khoản mới</h1>
+          <p class="mt-2 text-sm text-slate-400">Điền thông tin bên dưới để bắt đầu. Các trường có dấu <span class="text-primary">*</span> là bắt buộc.</p>
+        </header>
+
+        <form id="registerForm" class="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2" novalidate>
+          <!-- Full name -->
+          <div class="sm:col-span-2">
+            <label for="fullName" class="mb-1.5 block text-sm font-medium text-slate-300">Họ và tên <span class="text-primary">*</span></label>
+            <div class="relative">
+              <i data-lucide="user" class="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500"></i>
+              <input id="fullName" name="fullName" type="text" autocomplete="name" required aria-describedby="fullNameError"
+                placeholder="Nguyễn Văn A"
+                class="w-full rounded-xl border border-line bg-elevated py-3 pl-11 pr-4 text-sm text-slate-100 placeholder-slate-500 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30" />
+            </div>
+            <p id="fullNameError" class="mt-1.5 hidden items-center gap-1 text-xs text-red-400">
+              <i data-lucide="alert-circle" class="h-3.5 w-3.5"></i><span data-msg></span>
+            </p>
+          </div>
+
+          <!-- Email -->
+          <div class="sm:col-span-2">
+            <label for="email" class="mb-1.5 block text-sm font-medium text-slate-300">Email <span class="text-primary">*</span></label>
+            <div class="relative">
+              <i data-lucide="mail" class="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500"></i>
+              <input id="email" name="email" type="email" autocomplete="email" required aria-describedby="emailError"
+                placeholder="ban@vidu.com"
+                class="w-full rounded-xl border border-line bg-elevated py-3 pl-11 pr-4 text-sm text-slate-100 placeholder-slate-500 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30" />
+            </div>
+            <p id="emailError" class="mt-1.5 hidden items-center gap-1 text-xs text-red-400">
+              <i data-lucide="alert-circle" class="h-3.5 w-3.5"></i><span data-msg></span>
+            </p>
+          </div>
+
+          <!-- Password -->
+          <div>
+            <label for="password" class="mb-1.5 block text-sm font-medium text-slate-300">Mật khẩu <span class="text-primary">*</span></label>
+            <div class="relative">
+              <i data-lucide="lock" class="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500"></i>
+              <input id="password" name="password" type="password" autocomplete="new-password" required aria-describedby="passwordError"
+                placeholder="Tạo mật khẩu"
+                class="w-full rounded-xl border border-line bg-elevated py-3 pl-11 pr-12 text-sm text-slate-100 placeholder-slate-500 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30" />
+              <button type="button" data-toggle="password" aria-label="Hiện mật khẩu"
+                class="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-slate-500 transition hover:bg-white/5 hover:text-slate-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+                <span data-icon="show"><i data-lucide="eye" class="h-5 w-5"></i></span>
+                <span data-icon="hide" class="hidden"><i data-lucide="eye-off" class="h-5 w-5"></i></span>
+              </button>
+            </div>
+            <p id="passwordError" class="mt-1.5 hidden items-center gap-1 text-xs text-red-400">
+              <i data-lucide="alert-circle" class="h-3.5 w-3.5"></i><span data-msg></span>
+            </p>
+          </div>
+
+          <!-- Confirm password -->
+          <div>
+            <label for="confirmPassword" class="mb-1.5 block text-sm font-medium text-slate-300">Xác nhận mật khẩu <span class="text-primary">*</span></label>
+            <div class="relative">
+              <i data-lucide="lock-keyhole" class="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500"></i>
+              <input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" required aria-describedby="confirmPasswordError"
+                placeholder="Nhập lại mật khẩu"
+                class="w-full rounded-xl border border-line bg-elevated py-3 pl-11 pr-12 text-sm text-slate-100 placeholder-slate-500 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30" />
+              <button type="button" data-toggle="confirmPassword" aria-label="Hiện mật khẩu"
+                class="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-slate-500 transition hover:bg-white/5 hover:text-slate-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+                <span data-icon="show"><i data-lucide="eye" class="h-5 w-5"></i></span>
+                <span data-icon="hide" class="hidden"><i data-lucide="eye-off" class="h-5 w-5"></i></span>
+              </button>
+            </div>
+            <p id="confirmPasswordError" class="mt-1.5 hidden items-center gap-1 text-xs text-red-400">
+              <i data-lucide="alert-circle" class="h-3.5 w-3.5"></i><span data-msg></span>
+            </p>
+          </div>
+
+          <!-- Gender (không bắt buộc) -->
+          <fieldset class="sm:col-span-2">
+            <legend class="mb-1.5 block text-sm font-medium text-slate-300">Giới tính <span class="font-normal text-slate-500">(không bắt buộc)</span></legend>
+            <div class="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+              <label class="cursor-pointer">
+                <input type="radio" name="gender" value="male" class="peer sr-only" />
+                <span class="flex items-center justify-center rounded-xl border border-line bg-elevated px-3 py-2.5 text-sm text-slate-300 transition hover:border-slate-600 peer-checked:border-primary peer-checked:bg-primary/10 peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-primary/40">Nam</span>
+              </label>
+              <label class="cursor-pointer">
+                <input type="radio" name="gender" value="female" class="peer sr-only" />
+                <span class="flex items-center justify-center rounded-xl border border-line bg-elevated px-3 py-2.5 text-sm text-slate-300 transition hover:border-slate-600 peer-checked:border-primary peer-checked:bg-primary/10 peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-primary/40">Nữ</span>
+              </label>
+              <label class="cursor-pointer">
+                <input type="radio" name="gender" value="other" class="peer sr-only" />
+                <span class="flex items-center justify-center rounded-xl border border-line bg-elevated px-3 py-2.5 text-sm text-slate-300 transition hover:border-slate-600 peer-checked:border-primary peer-checked:bg-primary/10 peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-primary/40">Khác</span>
+              </label>
+              <label class="cursor-pointer">
+                <input type="radio" name="gender" value="unspecified" class="peer sr-only" />
+                <span class="flex items-center justify-center whitespace-nowrap rounded-xl border border-line bg-elevated px-3 py-2.5 text-sm text-slate-300 transition hover:border-slate-600 peer-checked:border-primary peer-checked:bg-primary/10 peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-primary/40">Không tiết lộ</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <!-- Phone (không bắt buộc) -->
+          <div class="sm:col-span-2">
+            <label for="phone" class="mb-1.5 block text-sm font-medium text-slate-300">Số điện thoại <span class="font-normal text-slate-500">(không bắt buộc)</span></label>
+            <div class="relative">
+              <i data-lucide="phone" class="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500"></i>
+              <input id="phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel" maxlength="10" aria-describedby="phoneError"
+                placeholder="Số điện thoại 10 chữ số"
+                class="w-full rounded-xl border border-line bg-elevated py-3 pl-11 pr-4 text-sm text-slate-100 placeholder-slate-500 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30" />
+            </div>
+            <p id="phoneError" class="mt-1.5 hidden items-center gap-1 text-xs text-red-400">
+              <i data-lucide="alert-circle" class="h-3.5 w-3.5"></i><span data-msg></span>
+            </p>
+          </div>
+
+          <!-- Address (không bắt buộc) -->
+          <div class="sm:col-span-2">
+            <label for="address" class="mb-1.5 block text-sm font-medium text-slate-300">Địa chỉ <span class="font-normal text-slate-500">(không bắt buộc)</span></label>
+            <div class="relative">
+              <i data-lucide="map-pin" class="pointer-events-none absolute left-3.5 top-3.5 h-5 w-5 text-slate-500"></i>
+              <textarea id="address" name="address" rows="2" autocomplete="street-address"
+                placeholder="Số nhà, đường, phường/xã, tỉnh/thành phố"
+                class="w-full resize-none rounded-xl border border-line bg-elevated py-3 pl-11 pr-4 text-sm text-slate-100 placeholder-slate-500 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30"></textarea>
+            </div>
+          </div>
+
+          <!-- Terms -->
+          <div class="sm:col-span-2">
+            <label for="terms" class="flex cursor-pointer select-none items-start gap-2.5 text-sm text-slate-300">
+              <input id="terms" name="terms" type="checkbox" required aria-describedby="termsError"
+                class="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border-line bg-elevated accent-[#DF6B33] focus:ring-2 focus:ring-primary/40" />
+              <span>
+                Tôi đồng ý với
+                <a href="#" class="font-medium text-primary hover:text-primary-hover hover:underline">Điều khoản dịch vụ</a>
+                và
+                <a href="#" class="font-medium text-primary hover:text-primary-hover hover:underline">Chính sách bảo mật</a>
+                <span class="text-primary">*</span>
+              </span>
+            </label>
+            <p id="termsError" class="mt-1.5 hidden items-center gap-1 text-xs text-red-400">
+              <i data-lucide="alert-circle" class="h-3.5 w-3.5"></i><span data-msg></span>
+            </p>
+          </div>
+
+          <!-- Submit -->
+          <div class="sm:col-span-2">
+            <button type="submit" id="submitBtn"
+              class="group flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 font-heading text-sm font-semibold text-white shadow-lg shadow-primary/25 transition hover:bg-primary-hover active:bg-primary-active focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-70">
+              <span id="submitText">Đăng ký</span>
+              <span id="submitArrow"><i data-lucide="arrow-right" class="h-4 w-4 transition group-hover:translate-x-0.5"></i></span>
+              <span id="submitSpinner" class="hidden"><i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i></span>
+            </button>
+          </div>
+        </form>
+
+        <p class="mt-8 text-center text-sm text-slate-400">
+          Đã có tài khoản?
+          <a href="login.html" class="font-medium text-primary transition hover:text-primary-hover hover:underline">Quay lại trang đăng nhập</a>
+        </p>
+      </section>
+    </div>
+  </main>
+
+  <!-- Toast -->
+  <div id="toast" role="status" aria-live="polite"
+    class="pointer-events-none fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 translate-y-4 items-center gap-2 rounded-xl border border-line bg-elevated px-4 py-3 text-sm text-slate-100 opacity-0 shadow-xl transition duration-300">
+    <i data-lucide="check-circle-2" class="h-5 w-5 text-emerald-400"></i>
+    <span id="toastText">Đăng ký thành công!</span>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    const form = document.getElementById('registerForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const toast = document.getElementById('toast');
+    const toastText = document.getElementById('toastText');
+    const $ = (id) => document.getElementById(id);
+
+    const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const PHONE_PATTERN = /^\d{10}$/;
+
+    // Each rule returns an error message, or '' when the value is valid
+    const rules = {
+      fullName: () => ($('fullName').value.trim() ? '' : 'Vui lòng nhập họ và tên.'),
+      email: () => {
+        const v = $('email').value.trim();
+        if (!v) return 'Vui lòng nhập email.';
+        if (!EMAIL_PATTERN.test(v)) return 'Email không hợp lệ.';
+        return '';
+      },
+      password: () => ($('password').value ? '' : 'Vui lòng nhập mật khẩu.'),
+      confirmPassword: () => {
+        const v = $('confirmPassword').value;
+        if (!v) return 'Vui lòng xác nhận mật khẩu.';
+        if (v !== $('password').value) return 'Mật khẩu xác nhận không khớp.';
+        return '';
+      },
+      phone: () => {
+        const v = $('phone').value.trim();
+        if (!v) return ''; // optional
+        return PHONE_PATTERN.test(v) ? '' : 'Số điện thoại phải gồm đúng 10 chữ số.';
+      },
+      terms: () => ($('terms').checked ? '' : 'Bạn cần đồng ý với Điều khoản dịch vụ và Chính sách bảo mật.'),
+    };
+
+    // Show an error message under a field, or clear it when message is empty
+    function setError(id, message) {
+      const input = $(id);
+      const errorEl = $(id + 'Error');
+      const hasError = Boolean(message);
+      errorEl.querySelector('[data-msg]').textContent = message || '';
+      errorEl.classList.toggle('hidden', !hasError);
+      errorEl.classList.toggle('flex', hasError);
+      if (input.type !== 'checkbox') {
+        input.classList.toggle('border-red-500', hasError);
+        input.classList.toggle('focus:border-red-500', hasError);
+      }
+      input.setAttribute('aria-invalid', hasError);
+    }
+
+    const validate = (id) => {
+      const message = rules[id]();
+      setError(id, message);
+      return message;
+    };
+
+    const isInvalid = (id) => $(id).getAttribute('aria-invalid') === 'true';
+
+    // Show / hide password buttons
+    document.querySelectorAll('[data-toggle]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const input = $(btn.dataset.toggle);
+        const show = input.type === 'password';
+        input.type = show ? 'text' : 'password';
+        btn.setAttribute('aria-label', show ? 'Ẩn mật khẩu' : 'Hiện mật khẩu');
+        btn.querySelector('[data-icon="show"]').classList.toggle('hidden', show);
+        btn.querySelector('[data-icon="hide"]').classList.toggle('hidden', !show);
+      });
+    });
+
+    // Phone: digits only
+    $('phone').addEventListener('input', (e) => {
+      e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10);
+    });
+
+    // Validate on blur; re-validate while typing once an error is shown
+    ['fullName', 'email', 'password', 'confirmPassword', 'phone'].forEach((id) => {
+      const input = $(id);
+      input.addEventListener('blur', (e) => {
+        // Clicking the show/hide button is not leaving the field
+        if (e.relatedTarget && e.relatedTarget.dataset.toggle === id) return;
+        validate(id);
+      });
+      input.addEventListener('input', () => {
+        if (isInvalid(id)) validate(id);
+        // Keep the confirm field in sync when the password changes
+        if (id === 'password' && $('confirmPassword').value) validate('confirmPassword');
+      });
+    });
+    $('terms').addEventListener('change', () => validate('terms'));
+
+    function showToast(message) {
+      toastText.textContent = message;
+      toast.classList.remove('opacity-0', 'translate-y-4');
+      setTimeout(() => toast.classList.add('opacity-0', 'translate-y-4'), 2500);
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const order = ['fullName', 'email', 'password', 'confirmPassword', 'phone', 'terms'];
+      const failed = order.filter((id) => validate(id));
+      if (failed.length) {
+        $(failed[0]).focus();
+        return;
+      }
+
+      // Simulated request
+      submitBtn.disabled = true;
+      $('submitText').textContent = 'Đang tạo tài khoản...';
+      $('submitArrow').classList.add('hidden');
+      $('submitSpinner').classList.remove('hidden');
+
+      setTimeout(() => {
+        showToast('Đăng ký thành công! Đang chuyển đến trang đăng nhập...');
+        setTimeout(() => { window.location.href = 'login.html'; }, 1500);
+      }, 1200);
+    });
+
+  </script>
+</body>
+</html>
