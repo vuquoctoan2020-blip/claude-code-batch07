@@ -1,0 +1,6 @@
+{
+  "redirects": [
+    { "source": "/charts.html", "destination": "/", "permanent": true },
+    { "source": "/charts", "destination": "/", "permanent": true }
+  ]
+}
